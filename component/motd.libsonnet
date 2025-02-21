@@ -33,7 +33,7 @@ local namespace = {
 };
 
 local motdRBAC =
-  local argocd_sa = kube.ServiceAccount('motd-manager') + namespace;
+  local motd_sa = kube.ServiceAccount('motd-manager') + namespace;
   local cluster_role = kube.ClusterRole('appuio:motd-editor') {
     rules: [
       {
@@ -51,11 +51,11 @@ local motdRBAC =
   };
   local cluster_role_binding =
     kube.ClusterRoleBinding('appuio:motd-manager') {
-      subjects_: [ argocd_sa ],
+      subjects_: [ motd_sa ],
       roleRef_: cluster_role,
     };
   {
-    argocd_sa: argocd_sa,
+    motd_sa: motd_sa,
     cluster_role: cluster_role,
     cluster_role_binding: cluster_role_binding,
   };
@@ -94,7 +94,7 @@ local jobSpec = {
             },
           },
         },
-        serviceAccountName: motdRBAC.argocd_sa.metadata.name,
+        serviceAccountName: motdRBAC.motd_sa.metadata.name,
       },
     },
   },
