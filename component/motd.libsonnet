@@ -41,12 +41,6 @@ local motdRBAC =
         resources: [ 'consolenotifications' ],
         verbs: [ 'get', 'list' ],
       },
-      {
-        apiGroups: [ '' ],
-        resources: [ 'configmaps' ],
-        resourceNames: [ 'motd', 'motd-template' ],
-        verbs: [ '*' ],
-      },
     ],
   };
   local cluster_role_binding =
@@ -54,10 +48,22 @@ local motdRBAC =
       subjects_: [ motd_sa ],
       roleRef_: cluster_role,
     };
+  local role_binding = kube.RoleBinding('appuio:motd-manager') {
+    metadata+: {
+      namespace: 'openshift',
+    },
+    subjects_: [ motd_sa ],
+    roleRef: {
+      apiGroup: 'rbac.authorization.k8s.io',
+      kind: 'ClusterRole',
+      name: 'edit',
+    },
+  };
   {
     motd_sa: motd_sa,
     cluster_role: cluster_role,
     cluster_role_binding: cluster_role_binding,
+    role_binding: role_binding,
   };
 
 local jobSpec = {

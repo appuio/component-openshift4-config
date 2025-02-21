@@ -155,15 +155,6 @@ rules:
     verbs:
       - get
       - list
-  - apiGroups:
-      - ''
-    resourceNames:
-      - motd
-      - motd-template
-    resources:
-      - configmaps
-    verbs:
-      - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -189,3 +180,20 @@ metadata:
     name: motd-manager
   name: motd-manager
   namespace: openshift-config
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  annotations: {}
+  labels:
+    name: appuio-motd-manager
+  name: appuio:motd-manager
+  namespace: openshift
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+  - kind: ServiceAccount
+    name: motd-manager
+    namespace: openshift-config
