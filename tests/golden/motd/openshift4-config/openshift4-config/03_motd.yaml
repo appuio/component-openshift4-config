@@ -140,15 +140,6 @@ spec:
   schedule: 27 */4 * * *
   successfulJobsHistoryLimit: 10
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  annotations: {}
-  labels:
-    name: motd-manager
-  name: motd-manager
-  namespace: openshift-config
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -164,15 +155,6 @@ rules:
     verbs:
       - get
       - list
-  - apiGroups:
-      - ''
-    resourceNames:
-      - motd
-      - motd-template
-    resources:
-      - configmaps
-    verbs:
-      - '*'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -185,6 +167,32 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: appuio:motd-editor
+subjects:
+  - kind: ServiceAccount
+    name: motd-manager
+    namespace: openshift-config
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations: {}
+  labels:
+    name: motd-manager
+  name: motd-manager
+  namespace: openshift-config
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  annotations: {}
+  labels:
+    name: appuio-motd-manager
+  name: appuio:motd-manager
+  namespace: openshift
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
 subjects:
   - kind: ServiceAccount
     name: motd-manager

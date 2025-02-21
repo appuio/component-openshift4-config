@@ -33,7 +33,7 @@ local namespace = {
 };
 
 local motdRBAC =
-  local argocd_sa = kube.ServiceAccount('motd-manager') + namespace;
+  local motd_sa = kube.ServiceAccount('motd-manager') + namespace;
   local cluster_role = kube.ClusterRole('appuio:motd-editor') {
     rules: [
       {
@@ -41,23 +41,29 @@ local motdRBAC =
         resources: [ 'consolenotifications' ],
         verbs: [ 'get', 'list' ],
       },
-      {
-        apiGroups: [ '' ],
-        resources: [ 'configmaps' ],
-        resourceNames: [ 'motd', 'motd-template' ],
-        verbs: [ '*' ],
-      },
     ],
   };
   local cluster_role_binding =
     kube.ClusterRoleBinding('appuio:motd-manager') {
-      subjects_: [ argocd_sa ],
+      subjects_: [ motd_sa ],
       roleRef_: cluster_role,
     };
+  local role_binding = kube.RoleBinding('appuio:motd-manager') {
+    metadata+: {
+      namespace: 'openshift',
+    },
+    subjects_: [ motd_sa ],
+    roleRef: {
+      apiGroup: 'rbac.authorization.k8s.io',
+      kind: 'ClusterRole',
+      name: 'edit',
+    },
+  };
   {
-    argocd_sa: argocd_sa,
+    motd_sa: motd_sa,
     cluster_role: cluster_role,
     cluster_role_binding: cluster_role_binding,
+    role_binding: role_binding,
   };
 
 local jobSpec = {
@@ -94,7 +100,7 @@ local jobSpec = {
             },
           },
         },
-        serviceAccountName: motdRBAC.argocd_sa.metadata.name,
+        serviceAccountName: motdRBAC.motd_sa.metadata.name,
       },
     },
   },
