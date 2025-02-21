@@ -102,3 +102,13 @@ type:: boolean
 default:: `false`
 
 Whether to include the console notifications from https://github.com/appuio/component-openshift4-console/blob/master/docs/modules/ROOT/pages/references/parameters.adoc#notifications[component-openshift4-console] in the message of the day.
+
+The component will include each console notification's `spec.text` and `spec.link` contents in the following form:
+
+[source,text]
+----
+<spec.text>
+<spec.link.text>: <spec.link.href>
+----
+
+For console notifications which don't provide `spec.link`, the second line will be omitted.
