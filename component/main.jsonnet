@@ -35,5 +35,5 @@ local motd = import 'motd.libsonnet';
   [if params.clusterUpgradeSCCPermissionFix.enabled then '02_clusterUpgradeSCCPermissionFix']:
     import 'privileged-scc.libsonnet',
   [if std.length(motd) > 0 then '03_motd']: motd,
-  '10_aggregate_to_cluster_reaqder': import 'aggregated-clusterroles.libsonnet',
+  '10_aggregate_to_cluster_reader': import 'aggregated-clusterroles.libsonnet',
 }
