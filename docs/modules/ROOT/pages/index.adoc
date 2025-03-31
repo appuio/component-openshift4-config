@@ -4,4 +4,7 @@ openshift4-config is a Commodore component to manage openshift4-config.
 
 Currently, this component can manage the global cluster pull secret as described in the https://docs.openshift.com/container-platform/latest/openshift_images/managing_images/using-image-pull-secrets.html#images-update-global-pull-secret_using-image-pull-secret[OpenShift documentation].
 
+Additionally, the component deploys custom `ClusterRole` resources which are aggregated to the `cluster-reader` cluster role.
+Currently, the component aggregates `get/list/watch` permissions for all `operator.openshift.io` resources to the `cluster-reader` role.
+
 See the xref:references/parameters.adoc[parameters] reference for further details.

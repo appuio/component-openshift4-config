@@ -1,0 +1,17 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations: {}
+  labels:
+    name: syn-aggregate-operator-openshift-io-to-cluster-reader
+    rbac.authorization.k8s.io/aggregate-to-cluster-reader: 'true'
+  name: syn:aggregate-operator-openshift-io-to-cluster-reader
+rules:
+  - apiGroups:
+      - operator.openshift.io
+    resources:
+      - '*'
+    verbs:
+      - get
+      - list
+      - watch
