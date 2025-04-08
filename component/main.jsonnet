@@ -32,8 +32,6 @@ local motd = import 'motd.libsonnet';
   [if legacyPullSecret != null then '01_dockercfg']: dockercfg,
   [if legacyPullSecret == null && std.length(std.objectFields(params.globalPullSecrets)) > 0 then '99_cluster_pull_secret']:
     import 'pull-secret-sync-job.libsonnet',
-  [if params.clusterUpgradeSCCPermissionFix.enabled then '02_clusterUpgradeSCCPermissionFix']:
-    import 'privileged-scc.libsonnet',
   [if std.length(motd) > 0 then '03_motd']: motd,
   '10_aggregate_to_cluster_reader': import 'aggregated-clusterroles.libsonnet',
 }
