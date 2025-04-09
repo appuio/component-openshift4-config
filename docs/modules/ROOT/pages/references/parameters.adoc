@@ -53,31 +53,6 @@ The component doesn't base64-encode the value provided for `auth`.
 Please make sure that you store the `auth` value as base64 in Vault.
 ====
 
-== `clusterUpgradeSCCPermissionFix`
-
-[horizontal]
-type:: dictionary
-
-If enabled fixes cluster upgrades on 4.10 clusters with custom SCCs that set `privileged: true`.
-A copy of the default `privileged` SCC is created with increased priority to be chosen over custom SCCs.
-
-=== `clusterUpgradeSCCPermissionFix.enabled`
-
-[horizontal]
-type:: boolean
-default:: `true`
-
-Whether to enable the SCC priority fix.
-
-=== `clusterUpgradeSCCPermissionFix.priority`
-
-[horizontal]
-type:: number
-default:: `3`
-
-The priority the resulting SCC will have.
-
-
 == `motd`
 
 [horizontal]
