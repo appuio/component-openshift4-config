@@ -39,7 +39,7 @@ local jl = esp.jsonnetLibrary('appuio-etcd', namespace) {
   },
   spec: {
     data: {
-      'spec.json': std.manifestJson(params.etcd.spec),
+      'spec.json': std.manifestJson(params.etcdCustomization.spec),
       'etcd.libsonnet': importstr 'espejote-templates/etcd-helpers.libsonnet',
     },
   },

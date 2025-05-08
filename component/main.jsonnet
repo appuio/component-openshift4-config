@@ -34,6 +34,6 @@ local motd = import 'motd.libsonnet';
   [if legacyPullSecret == null && std.length(std.objectFields(params.globalPullSecrets)) > 0 then '99_cluster_pull_secret']:
     import 'pull-secret-sync-job.libsonnet',
   [if std.length(motd) > 0 then '03_motd']: motd,
-  [if params.etcd.enabled then '05_etcd_managedresource']: import 'etcd.libsonnet',
+  [if params.etcdCustomization.enabled then '05_etcd_managedresource']: import 'etcd.libsonnet',
   '10_aggregate_to_cluster_reader': import 'aggregated-clusterroles.libsonnet',
 }

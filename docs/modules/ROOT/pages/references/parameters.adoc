@@ -88,24 +88,24 @@ The component will include each console notification's `spec.text` and `spec.lin
 
 For console notifications which don't provide `spec.link`, the second line will be omitted.
 
-== `etcd`
+== `etcdCustomziation`
 
 [horizontal]
 type:: dictionary
 
-This parameter allows configuring the cluster's etcd.
+This parameter allows customizing the cluster's etcd.
 The implementation uses https://github.com/vshn/espejote[Espejote] to reconcile our customizations for the `etcd.operator.openshift.io/cluster` resource.
 
-=== `etcd.enabled`
+=== `etcdCustomization.enabled`
 
 [horizontal]
-type:: booloean
+type:: boolean
 default:: `false`
 
 Whether to deploy the Espejote managed resource on the cluster.
 If this parameter is set to `false`, changing the contents of `etcd.spec` has no effect.
 
-== `etcd.spec`
+=== `etcdCustomization.spec`
 
 [horizontal]
 type:: dictionary

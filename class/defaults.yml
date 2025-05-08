@@ -18,7 +18,7 @@ parameters:
       messages: {}
       include_console_notifications: false
 
-    etcd:
+    etcdCustomization:
       enabled: false
       spec:
         controlPlaneHardwareSpeed: ""

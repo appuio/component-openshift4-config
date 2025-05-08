@@ -6,5 +6,5 @@ parameters:
         output_path: vendor/lib/espejote.libsonnet
 
   openshift4_config:
-    etcd:
+    etcdCustomization:
       enabled: true
