@@ -7,7 +7,7 @@
       "name": "openshift4-config",
       "slug": "openshift4-config",
       "parameter_key": "openshift4_config",
-      "test_cases": "defaults pull-secret motd",
+      "test_cases": "defaults pull-secret motd etcd",
       "add_lib": "n",
       "add_pp": "n",
       "add_golden": "y",
@@ -24,7 +24,8 @@
       "github_owner": "appuio",
       "github_name": "component-openshift4-config",
       "github_url": "https://github.com/appuio/component-openshift4-config",
-      "_template": "https://github.com/projectsyn/commodore-component-template.git"
+      "_template": "https://github.com/projectsyn/commodore-component-template.git",
+      "_commit": "98d16f99766e6c6d97322dbe42e058f0e2bf73d0"
     }
   },
   "directory": null
