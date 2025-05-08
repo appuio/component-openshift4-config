@@ -88,6 +88,8 @@ metadata:
   name: appuio-etcd
   namespace: openshift-config
 spec:
+  applyOptions:
+    force: true
   serviceAccountRef:
     name: appuio-etcd-manager
   template: |

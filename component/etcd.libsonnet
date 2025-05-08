@@ -47,6 +47,9 @@ local jl = esp.jsonnetLibrary('appuio-etcd', namespace) {
 
 local mr = esp.managedResource('appuio-etcd', namespace) {
   spec: {
+    // Set force=true so we can take ownership of previously manually edited
+    // fields in `spec`.
+    applyOptions: { force: true },
     serviceAccountRef: { name: sa.metadata.name },
     triggers: [
       {
