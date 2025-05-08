@@ -17,3 +17,8 @@ parameters:
     motd:
       messages: {}
       include_console_notifications: false
+
+    etcd:
+      enabled: false
+      spec:
+        controlPlaneHardwareSpeed: ""
