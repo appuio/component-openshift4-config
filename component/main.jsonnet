@@ -34,4 +34,17 @@ local motd = import 'motd.libsonnet';
     import 'pull-secret-sync-job.libsonnet',
   [if std.length(motd) > 0 then '03_motd']: motd,
   '10_aggregate_to_cluster_reader': import 'aggregated-clusterroles.libsonnet',
+  '99_tmp_test': {
+    apiVersion: 'v1',
+    kind: 'ConfigMap',
+    metadata: {
+      annotations: {
+        'argocd.argoproj.io/sync-options': 'ServerSideApply=true,Prune=false',
+      },
+      name: 'test',
+    },
+    data: {
+      field: 'openshift4-config',
+    },
+  },
 }
