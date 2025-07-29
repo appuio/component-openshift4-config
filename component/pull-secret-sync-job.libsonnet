@@ -60,7 +60,7 @@ local cleanJob = kube.Job('syn-unmanage-cluster-pull-secret') {
         serviceAccountName: jobSA.metadata.name,
         containers_: {
           clean: {
-            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.kubectl,
+            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.oc,
             command: [
               'bash',
               '-ce',
@@ -135,7 +135,7 @@ local syncJob = kube.Job('syn-update-cluster-pull-secret') {
         serviceAccountName: jobSA.metadata.name,
         containers_: {
           update: kube.Container('update') {
-            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.kubectl,
+            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.oc,
             command: [ '/script/sync-secret.sh' ],
             volumeMounts_: {
               script: {
