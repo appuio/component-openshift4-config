@@ -5,10 +5,6 @@ parameters:
     globalPullSecrets: {}
 
     images:
-      kubectl:
-        registry: docker.io
-        repository: bitnami/kubectl
-        tag: 1.25.15
       oc:
         registry: quay.io
         repository: appuio/oc
