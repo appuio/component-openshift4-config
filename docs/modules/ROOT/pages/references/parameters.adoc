@@ -67,10 +67,17 @@ caBundle: | <1>
   MY AWESOME CA
   -----END CERTIFICATE-----
 ----
-<1> Custom CA deployed as ConfigMap `custom-ca-bundle`.
+<1> Custom CA deployed as ConfigMap `syn-ca-bundle`.
 
 This parameter allows to deploy a ConfigMap in the `openshift-config` namespace.
 The ConfigMap contains the configured CA in the key `ca-bundle.crt`, to be used by other components.
+
+[IMPORTANT]
+====
+This ConfigMap isn't used by OpenShift components.
+OpenShift uses a separate config map called `user-ca-bundle` in namespace `openshift-config` to extend the system wide trusted CA bundle.
+See parameter `trustedCA` in component https://hub.syn.tools/openshift4-proxy/references/parameters.html#_trustedca[openshift4-proxy] for details on how to deploy additional trusted CA certificates for the system-wide trusted CA bundle.
+====
 
 == `motd`
 

@@ -31,8 +31,20 @@ local caBundle = {
   apiVersion: 'v1',
   kind: 'ConfigMap',
   metadata: {
-    name: 'custom-ca-bundle',
+    name: 'syn-ca-bundle',
     namespace: 'openshift-config',
+    annotations: {
+      'syn.tools/description': |||
+        This is a config map that's deployed via Commodore component
+        openshift4-config and which is intended to be consumed by other
+        Commodore components.
+
+        OpenShift uses a separate config map called `user-ca-bundle` in this
+        namespace to extend the system wide trusted CA bundle. See parameter
+        `trustedCA` in Commodore component `openshift4-proxy` to configure
+        that config map.
+      |||,
+    },
   },
   data: {
     'ca-bundle.crt': params.caBundle,
