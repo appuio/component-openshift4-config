@@ -3,6 +3,7 @@ parameters:
     =_metadata:
       multi_tenant: true
     globalPullSecrets: {}
+    caBundle: null
 
     images:
       oc:
