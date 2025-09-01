@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  ca-bundle.crt: |
+    -----BEGIN CERTIFICATE-----
+    MY AWESOME CA
+    -----END CERTIFICATE-----
+kind: ConfigMap
+metadata:
+  name: custom-ca-bundle
+  namespace: openshift-config

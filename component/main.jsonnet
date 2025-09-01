@@ -27,6 +27,18 @@ local dockercfg = std.trace(
 
 local motd = import 'motd.libsonnet';
 
+local caBundle = {
+  apiVersion: 'v1',
+  kind: 'ConfigMap',
+  metadata: {
+    name: 'custom-ca-bundle',
+    namespace: 'openshift-config',
+  },
+  data: {
+    'ca-bundle.crt': params.caBundle,
+  },
+};
+
 
 // Define outputs below
 {
@@ -36,4 +48,5 @@ local motd = import 'motd.libsonnet';
   [if std.length(motd) > 0 then '03_motd']: motd,
   [if params.etcdCustomization.enabled then '05_etcd_managedresource']: import 'etcd.libsonnet',
   '10_aggregate_to_cluster_reader': import 'aggregated-clusterroles.libsonnet',
+  [if params.caBundle != null then '11_ca_bundle']: caBundle,
 }

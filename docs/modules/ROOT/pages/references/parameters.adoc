@@ -53,6 +53,25 @@ The component doesn't base64-encode the value provided for `auth`.
 Please make sure that you store the `auth` value as base64 in Vault.
 ====
 
+== `caBundle`
+
+[horizontal]
+type:: string
+default:: `null`
+example::
++
+[source,yaml]
+----
+caBundle: | <1>
+  -----BEGIN CERTIFICATE-----
+  MY AWESOME CA
+  -----END CERTIFICATE-----
+----
+<1> Custom CA deployed as ConfigMap `custom-ca-bundle`.
+
+This parameter allows to deploy a ConfigMap in the `openshift-config` namespace.
+The ConfigMap contains the configured CA in the key `ca-bundle.crt`, to be used by other components.
+
 == `motd`
 
 [horizontal]
