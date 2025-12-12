@@ -18,7 +18,7 @@ else
 
 local sep = '\n----------------------------------------\n';
 
-local makeMotdCM(m) =
+local makeMotdCM(m=[]) =
   {
     apiVersion: 'v1',
     kind: 'ConfigMap',
@@ -34,4 +34,4 @@ local makeMotdCM(m) =
 if std.length(messages) > 0 then
   makeMotdCM(messages)
 else
-  esp.markForDelete(makeMotdCM([]))
+  esp.markForDelete(makeMotdCM())

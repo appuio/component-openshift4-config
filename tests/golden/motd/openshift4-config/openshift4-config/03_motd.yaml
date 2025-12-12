@@ -42,7 +42,7 @@ spec:
 
     local sep = '\n----------------------------------------\n';
 
-    local makeMotdCM(m) =
+    local makeMotdCM(m=[]) =
       {
         apiVersion: 'v1',
         kind: 'ConfigMap',
@@ -58,7 +58,7 @@ spec:
     if std.length(messages) > 0 then
       makeMotdCM(messages)
     else
-      esp.markForDelete(makeMotdCM([]))
+      esp.markForDelete(makeMotdCM())
   triggers:
     - name: consolenotifications
       watchContextResource:
@@ -109,6 +109,8 @@ rules:
       - watch
   - apiGroups:
       - espejote.io
+    resourceNames:
+      - motd
     resources:
       - jsonnetlibraries
     verbs:

@@ -24,6 +24,7 @@ local motdRBAC =
       {
         apiGroups: [ 'espejote.io' ],
         resources: [ 'jsonnetlibraries' ],
+        resourceNames: [ 'motd' ],
         verbs: [ 'get', 'list', 'watch' ],
       },
     ],
