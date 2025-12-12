@@ -1,30 +1,10 @@
 local com = import 'lib/commodore.libjsonnet';
+local esp = import 'lib/espejote.libsonnet';
 local kap = import 'lib/kapitan.libjsonnet';
 local kube = import 'lib/kube.libjsonnet';
 
 local inv = kap.inventory();
 local params = inv.parameters.openshift4_config;
-
-local messages = std.prune([ params.motd.messages[m] for m in std.objectFields(params.motd.messages) ]);
-local message = std.join('\n\n', messages);
-
-local motdCM = kube.ConfigMap('motd') {
-  metadata+: {
-    namespace: 'openshift',
-  },
-  data: {
-    message: message,
-  },
-};
-
-local motdTemplate = kube.ConfigMap('motd-template') {
-  metadata+: {
-    namespace: 'openshift',
-  },
-  data: {
-    message: message,
-  },
-};
 
 local namespace = {
   metadata+: {
@@ -39,7 +19,12 @@ local motdRBAC =
       {
         apiGroups: [ 'console.openshift.io' ],
         resources: [ 'consolenotifications' ],
-        verbs: [ 'get', 'list' ],
+        verbs: [ 'get', 'list', 'watch' ],
+      },
+      {
+        apiGroups: [ 'espejote.io' ],
+        resources: [ 'jsonnetlibraries' ],
+        verbs: [ 'get', 'list', 'watch' ],
       },
     ],
   };
@@ -66,73 +51,67 @@ local motdRBAC =
     role_binding: role_binding,
   };
 
-local jobSpec = {
-  spec+: {
-    template+: {
-      spec+: {
-        containers_+: {
-          notification: kube.Container('sync-motd') {
-            image: '%(registry)s/%(repository)s:%(tag)s' % params.images.oc,
-            name: 'sync-motd',
-            workingDir: '/export',
-            command: [ '/scripts/motd_gen.sh' ],
-            env_+: {
-              HOME: '/export',
-            },
-            volumeMounts_+: {
-              export: {
-                mountPath: '/export',
-              },
-              scripts: {
-                mountPath: '/scripts',
-              },
-            },
-          },
-        },
-        volumes_+: {
-          export: {
-            emptyDir: {},
-          },
-          scripts: {
-            configMap: {
-              name: 'motd-gen',
-              defaultMode: std.parseOctal('0550'),
-            },
-          },
-        },
-        serviceAccountName: motdRBAC.motd_sa.metadata.name,
+local jsonnetlib =
+  esp.jsonnetLibrary('motd', 'openshift-config') {
+    spec: {
+      data: {
+        'config.json': std.manifestJson({
+          motd: params.motd,
+        }),
       },
     },
-  },
+  };
+
+local jsonnetlib_ref = {
+  apiVersion: jsonnetlib.apiVersion,
+  kind: jsonnetlib.kind,
+  name: jsonnetlib.metadata.name,
+  namespace: jsonnetlib.metadata.namespace,
 };
 
-local motdSync = kube.Job('sync-motd') + namespace + jobSpec {
-  metadata+: {
-    annotations+: {
-      'argocd.argoproj.io/hook': 'PostSync',
-      'argocd.argoproj.io/hook-delete-policy': 'BeforeHookCreation',
+local managedresource =
+  esp.managedResource('motd-composer', 'openshift-config') {
+    metadata+: {
+      annotations: {
+        'syn.tools/description': |||
+          Composes the message of the day from manual entries in the syn hierarchy and active consolenotifications on the cluster.
+        |||,
+      },
     },
-  },
-};
+    spec: {
+      serviceAccountRef: { name: motdRBAC.motd_sa.metadata.name },
+      applyOptions: { force: true },
+      context: [
+        {
+          name: 'consolenotifications',
+          resource: {
+            apiVersion: 'console.openshift.io/v1',
+            kind: 'ConsoleNotification',
+            labelSelector: {
+              matchLabels: {
+                'appuio.io/notification': 'true',
+              },
+            },
+          },
+        },
+      ],
+      triggers: [
+        {
+          name: 'consolenotifications',
+          watchContextResource: {
+            name: 'consolenotifications',
+          },
+        },
+        {
+          name: 'jsonnetlib',
+          watchResource: jsonnetlib_ref,
+        },
+      ],
+      template: importstr 'espejote-templates/motd.jsonnet',
+    },
+  };
 
-local motdScript = kube.ConfigMap('motd-gen') + namespace {
-  data: {
-    'motd_gen.sh': (importstr 'scripts/motd_gen.sh'),
-  },
-};
-
-local motdCronJob = kube.CronJob('sync-motd') + namespace {
-  spec+: {
-    failedJobsHistoryLimit: 3,
-    schedule: '27 */4 * * *',
-    jobTemplate+: jobSpec,
-  },
-};
-
-if params.motd.include_console_notifications then
-  [ motdTemplate, motdSync, motdScript, motdCronJob ] + std.objectValues(motdRBAC)
+if std.length(params.motd.messages) > 0 || params.motd.include_console_notifications then
+  [ managedresource, jsonnetlib ] + std.objectValues(motdRBAC)
 else
-  if std.length(params.motd.messages) > 0 then
-    [ motdCM ]
-  else
-    []
+  []
