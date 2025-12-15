@@ -1,145 +1,95 @@
-apiVersion: v1
-data:
-  message: |-
-    Welcome to APPUiO
-
-    This cluster will soon be upgraded.
-kind: ConfigMap
-metadata:
-  annotations: {}
-  labels:
-    name: motd-template
-  name: motd-template
-  namespace: openshift
----
-apiVersion: batch/v1
-kind: Job
+apiVersion: espejote.io/v1alpha1
+kind: ManagedResource
 metadata:
   annotations:
-    argocd.argoproj.io/hook: PostSync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    syn.tools/description: |
+      Composes the message of the day from manual entries in the syn hierarchy and active consolenotifications on the cluster.
   labels:
-    name: sync-motd
-  name: sync-motd
+    app.kubernetes.io/name: motd-composer
+  name: motd-composer
   namespace: openshift-config
 spec:
-  completions: 1
-  parallelism: 1
-  template:
-    metadata:
-      labels:
-        name: sync-motd
-    spec:
-      containers:
-        - args: []
-          command:
-            - /scripts/motd_gen.sh
-          env:
-            - name: HOME
-              value: /export
-          image: quay.io/appuio/oc:v4.19
-          imagePullPolicy: IfNotPresent
-          name: sync-motd
-          ports: []
-          stdin: false
-          tty: false
-          volumeMounts:
-            - mountPath: /export
-              name: export
-            - mountPath: /scripts
-              name: scripts
-          workingDir: /export
-      imagePullSecrets: []
-      initContainers: []
-      restartPolicy: OnFailure
-      serviceAccountName: motd-manager
-      terminationGracePeriodSeconds: 30
-      volumes:
-        - emptyDir: {}
-          name: export
-        - configMap:
-            defaultMode: 360
-            name: motd-gen
-          name: scripts
----
-apiVersion: v1
-data:
-  motd_gen.sh: |
-    #!/bin/bash
-    set -exo pipefail
+  applyOptions:
+    force: true
+  context:
+    - name: consolenotifications
+      resource:
+        apiVersion: console.openshift.io/v1
+        kind: ConsoleNotification
+        labelSelector:
+          matchLabels:
+            appuio.io/notification: 'true'
+  serviceAccountRef:
+    name: motd-manager
+  template: |
+    local esp = import 'espejote.libsonnet';
+    local config = import 'motd/config.json';
 
-    jq 'del(.metadata) | .metadata.name = "motd" | .data.message = ([.data.message] + input | join("\n\n"))' \
-        <(kubectl -n openshift get cm motd-template -ojson) \
-        <(kubectl get consolenotifications -l appuio.io/notification=true -ojson |
-          jq '[.items[]|.spec.text,if .spec.link.text then "\(.spec.link.text): \(.spec.link.href)" else "" end|select(length > 0)]') \
-        > /tmp/motd.yaml
+    local formatConsoleNotification(cn) =
+      local text = cn.spec.text;
+      local link = if std.objectHas(cn.spec, 'link') then
+        std.join(': ', [ std.get(cn.spec.link, 'text', 'link'), std.get(cn.spec.link, 'href') ]);
+      std.join('\n', [ text, link ]);
 
-    if [ -z "$(jq -r '.data.message' /tmp/motd.yaml)" ]; then
-        kubectl -n openshift delete cm motd --ignore-not-found
+    local synMessages = std.prune([ config.motd.messages[m] for m in std.objectFields(config.motd.messages) ]);
+
+    local consoleMessages = [ formatConsoleNotification(n) for n in esp.context().consolenotifications ];
+
+    local messages = if config.motd.include_console_notifications then
+      synMessages + consoleMessages
     else
-        kubectl -n openshift apply -f /tmp/motd.yaml
-    fi
-kind: ConfigMap
-metadata:
-  annotations: {}
-  labels:
-    name: motd-gen
-  name: motd-gen
-  namespace: openshift-config
+      synMessages;
+
+    local sep = '\n----------------------------------------\n';
+
+    local makeMotdCM(m=[]) =
+      {
+        apiVersion: 'v1',
+        kind: 'ConfigMap',
+        metadata: {
+          name: 'motd',
+          namespace: 'openshift',
+        },
+        data: {
+          message: sep + std.join(sep, m) + sep,
+        },
+      };
+
+    if std.length(messages) > 0 then
+      makeMotdCM(messages)
+    else
+      esp.markForDelete(makeMotdCM())
+  triggers:
+    - name: consolenotifications
+      watchContextResource:
+        name: consolenotifications
+    - name: jsonnetlib
+      watchResource:
+        apiVersion: espejote.io/v1alpha1
+        kind: JsonnetLibrary
+        name: motd
+        namespace: openshift-config
 ---
-apiVersion: batch/v1
-kind: CronJob
+apiVersion: espejote.io/v1alpha1
+kind: JsonnetLibrary
 metadata:
-  annotations: {}
   labels:
-    name: sync-motd
-  name: sync-motd
+    app.kubernetes.io/name: motd
+  name: motd
   namespace: openshift-config
 spec:
-  concurrencyPolicy: Forbid
-  failedJobsHistoryLimit: 3
-  jobTemplate:
-    spec:
-      completions: 1
-      parallelism: 1
-      template:
-        metadata:
-          labels:
-            name: sync-motd
-        spec:
-          containers:
-            - args: []
-              command:
-                - /scripts/motd_gen.sh
-              env:
-                - name: HOME
-                  value: /export
-              image: quay.io/appuio/oc:v4.19
-              imagePullPolicy: IfNotPresent
-              name: sync-motd
-              ports: []
-              stdin: false
-              tty: false
-              volumeMounts:
-                - mountPath: /export
-                  name: export
-                - mountPath: /scripts
-                  name: scripts
-              workingDir: /export
-          imagePullSecrets: []
-          initContainers: []
-          restartPolicy: OnFailure
-          serviceAccountName: motd-manager
-          terminationGracePeriodSeconds: 30
-          volumes:
-            - emptyDir: {}
-              name: export
-            - configMap:
-                defaultMode: 360
-                name: motd-gen
-              name: scripts
-  schedule: 27 */4 * * *
-  successfulJobsHistoryLimit: 10
+  data:
+    config.json: |-
+      {
+          "motd": {
+              "include_console_notifications": true,
+              "messages": {
+                  "emtpy_message": null,
+                  "greeting": "Welcome to APPUiO",
+                  "upgrade": "This cluster will soon be upgraded."
+              }
+          }
+      }
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -156,6 +106,17 @@ rules:
     verbs:
       - get
       - list
+      - watch
+  - apiGroups:
+      - espejote.io
+    resourceNames:
+      - motd
+    resources:
+      - jsonnetlibraries
+    verbs:
+      - get
+      - list
+      - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
