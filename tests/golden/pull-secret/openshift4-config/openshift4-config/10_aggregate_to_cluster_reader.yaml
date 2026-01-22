@@ -15,3 +15,21 @@ rules:
       - get
       - list
       - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations: {}
+  labels:
+    name: syn-aggregate-networking-k8s-io-to-cluster-reader
+    rbac.authorization.k8s.io/aggregate-to-cluster-reader: 'true'
+  name: syn:aggregate-networking-k8s-io-to-cluster-reader
+rules:
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - '*'
+    verbs:
+      - get
+      - list
+      - watch
