@@ -51,6 +51,8 @@ local caBundle = {
   },
 };
 
+local vsphere = import 'vsphere.libsonnet';
+
 
 // Define outputs below
 {
@@ -61,4 +63,8 @@ local caBundle = {
   [if params.etcdCustomization.enabled then '05_etcd_managedresource']: import 'etcd.libsonnet',
   '10_aggregate_to_cluster_reader': import 'aggregated-clusterroles.libsonnet',
   [if params.caBundle != null then '11_ca_bundle']: caBundle,
-}
+} + if params.cloud == 'vsphere' then {
+  ['20_vsphere_%s' % manifest]: vsphere[manifest]
+  for manifest in std.objectFields(vsphere)
+  if vsphere[manifest] != null
+} else {}
