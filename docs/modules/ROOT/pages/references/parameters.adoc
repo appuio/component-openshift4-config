@@ -79,6 +79,33 @@ OpenShift uses a separate config map called `user-ca-bundle` in namespace `opens
 See parameter `trustedCA` in component https://hub.syn.tools/openshift4-proxy/references/parameters.html#_trustedca[openshift4-proxy] for details on how to deploy additional trusted CA certificates for the system-wide trusted CA bundle.
 ====
 
+== `cloud`
+
+[horizontal]
+type:: string
+default:: `null`
+
+The cloud provider on which the cluster is running.
+Currently, the component only looks at this parameter to check whether to manage vSphere credentials, see also parameter <<_vsphere,`vsphere`>>.
+
+== `vsphere`
+
+[horizontal]
+type:: dictionary
+default:: `{"vcenterURL": null, "username": null, "password": null}`
+
+The vSphere credentials for the cluster.
+
+If parameter <<_cloud,`cloud`>> is `vsphere`, the component verifies that none of the fields are `null` and deploys a secret `appuio-vsphere-creds` in namespace `openshift-config`.
+The contents of that secret are preformatted to work as contents for secret `vsphere-creds` in namespace `kube-system`.
+The component needs the vCenter URL because the secret fields must be named `<vcenter-url>.username` and `<vcenter-url>.password`.
+In addition to the secret the component also deploys an Espejote `ManagedResource` in namespace `openshift-config`.
+The `ManagedResource` copies the contents of secret `appuio-vsphere-creds` to secret `vsphere-creds` in namespace `kube-system`.
+
+TIP: We deploy a custom secret and a `ManagedResource` so that the vSphere credentials are not directly embedded into the `ManagedResource`'s `spec.template` on the cluster.
+
+NOTE: If parameter `cloud` isn't set to `vsphere`, the contents of this parameter are ignored.
+
 == `motd`
 
 [horizontal]

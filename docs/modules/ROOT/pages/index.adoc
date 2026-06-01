@@ -10,4 +10,6 @@ Currently, the component aggregates `get/list/watch` permissions for the followi
 * `operator.openshift.io`
 * `networking.k8s.io`
 
+On vSphere, the component also supports managing the cluster's vSphere credentials (secret `vsphere-creds` in namespace `kube-system`).
+
 See the xref:references/parameters.adoc[parameters] reference for further details.

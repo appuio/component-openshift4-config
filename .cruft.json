@@ -1,13 +1,13 @@
 {
   "template": "https://github.com/projectsyn/commodore-component-template.git",
-  "commit": "5ae57721558399419f867334e31d23a7f7a892ba",
+  "commit": "fa60b771b1f456194b0249c80061c7eb5980850e",
   "checkout": "main",
   "context": {
     "cookiecutter": {
       "name": "openshift4-config",
       "slug": "openshift4-config",
       "parameter_key": "openshift4_config",
-      "test_cases": "defaults pull-secret motd etcd",
+      "test_cases": "defaults pull-secret motd etcd vsphere",
       "add_lib": "n",
       "add_pp": "n",
       "add_golden": "y",
@@ -25,7 +25,7 @@
       "github_name": "component-openshift4-config",
       "github_url": "https://github.com/appuio/component-openshift4-config",
       "_template": "https://github.com/projectsyn/commodore-component-template.git",
-      "_commit": "5ae57721558399419f867334e31d23a7f7a892ba"
+      "_commit": "fa60b771b1f456194b0249c80061c7eb5980850e"
     }
   },
   "directory": null

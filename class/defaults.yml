@@ -4,6 +4,12 @@ parameters:
       multi_tenant: true
     globalPullSecrets: {}
     caBundle: null
+    cloud: null
+
+    vsphere:
+      vcenterURL: null
+      username: null
+      password: null
 
     images:
       oc:
