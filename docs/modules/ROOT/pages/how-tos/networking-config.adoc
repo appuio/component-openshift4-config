@@ -5,8 +5,12 @@ This component is managing the following OpenShift resources:
 * `networks.config.openshift.io/cluster`
 * `networks.operator.openshift.io/cluster`
 
-Other components can create `ConfigMaps` with their own spec for above resources,
-the `ManagedResource` will merge the specs of these `ConfigMaps` into the final configuration.
+Other components can create `ConfigMaps` with their own spec for these resources.
+The `ManagedResource` will merge the specs of these `ConfigMaps` into the final configuration.
+
+If multiple configmaps are setting the same field, configmap precedence is determined by ascibetically sorting the configmaps by their `metadata.name`.
+Configmaps which sort later have higher precedence.
+Values set through the component parameters have higher precedence than any values set through configmaps.
 
 
 == Example
@@ -28,12 +32,12 @@ data: <4>
         "deployKubeProxy": false
     }
 ----
-<1> Apply a label to the `ConfigMap`, see xref:references/parameters.adoc#_networking_labelconfig_and_networking_labeloperator[Parameters] for the values.
+<1> Label the `ConfigMap` so it's picked up by the `ManagedResource`, see xref:references/parameters.adoc#_networkcustomization_labelconfig_and_networkcustomization_labeloperator[Parameters] for the values.
 <2> The `ConfigMaps` will get sorted by their name before merging.
-<3> Applt the `ConfigMap` to the `openshift-config` namespace.
+<3> Apply the `ConfigMap` to the `openshift-config` namespace.
 <4> Use the key `spec` for your configuration
 
 [IMPORTANT]
 ====
-The configuration from xref:references/parameters.adoc#_networking_specconfig_and_networking_specoperator[this component] will take precendence over any `ConfigMaps`.
+The configuration from xref:references/parameters.adoc#_networkcustomization_specconfig_and_networkcustomization_specoperator[this component] will take precendence over any `ConfigMaps`.
 ====

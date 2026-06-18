@@ -74,8 +74,8 @@ local jl = esp.jsonnetLibrary('appuio-networking', namespace) {
   spec: {
     data: {
       'spec.json': std.manifestJson({
-        config: params.networking.specConfig,
-        operator: params.networking.specOperator,
+        config: params.networkCustomization.specConfig,
+        operator: params.networkCustomization.specOperator,
       }),
       'networking.libsonnet': importstr 'espejote-templates/networking-helpers.libsonnet',
     },
@@ -96,7 +96,7 @@ local mr = esp.managedResource('appuio-networking', namespace) {
           kind: 'ConfigMap',
           labelSelector: {
             matchLabels: {
-              [params.networking.labelConfig]: '',
+              [params.networkCustomization.labelConfig]: '',
             },
           },
         },
@@ -108,7 +108,7 @@ local mr = esp.managedResource('appuio-networking', namespace) {
           kind: 'ConfigMap',
           labelSelector: {
             matchLabels: {
-              [params.networking.labelOperator]: '',
+              [params.networkCustomization.labelOperator]: '',
             },
           },
         },

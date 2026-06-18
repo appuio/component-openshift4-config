@@ -61,7 +61,7 @@ local vsphere = import 'vsphere.libsonnet';
     import 'pull-secret-sync-job.libsonnet',
   [if std.length(motd) > 0 then '03_motd']: motd,
   [if params.etcdCustomization.enabled then '05_etcd_managedresource']: import 'etcd.libsonnet',
-  [if params.networking.enabled then '05_networking_managedresource']: import 'networking.libsonnet',
+  [if params.networkCustomization.enabled then '05_networking_managedresource']: import 'networking.libsonnet',
   '10_aggregate_to_cluster_reader': import 'aggregated-clusterroles.libsonnet',
   [if params.caBundle != null then '11_ca_bundle']: caBundle,
 } + if params.cloud == 'vsphere' then {
