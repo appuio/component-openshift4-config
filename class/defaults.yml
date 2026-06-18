@@ -25,3 +25,10 @@ parameters:
       enabled: false
       spec:
         controlPlaneHardwareSpeed: ""
+
+    networking:
+      enabled: true
+      labelConfig: 'networking.openshift-config.syn.tools/include-config'
+      labelOperator: 'networking.openshift-config.syn.tools/include-operator'
+      specConfig: {}
+      specOperator: {}
