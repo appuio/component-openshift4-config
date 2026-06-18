@@ -2,6 +2,7 @@
 
 .How-to guides
 * xref:how-tos/migrate-v1.adoc[]
+* xref:how-tos/networking-config.adoc[]
 
 .Technical reference
 * xref:references/parameters.adoc[Parameters]

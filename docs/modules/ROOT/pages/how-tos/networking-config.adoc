@@ -1,0 +1,43 @@
+# Use ConfigMap to merge Networking Config
+
+This component is managing the following OpenShift resources:
+
+* `networks.config.openshift.io/cluster`
+* `networks.operator.openshift.io/cluster`
+
+Other components can create `ConfigMaps` with their own spec for these resources.
+The `ManagedResource` will merge the specs of these `ConfigMaps` into the final configuration.
+
+If multiple configmaps are setting the same field, configmap precedence is determined by ascibetically sorting the configmaps by their `metadata.name`.
+Configmaps which sort later have higher precedence.
+Values set through the component parameters have higher precedence than any values set through configmaps.
+
+
+== Example
+
+Create a `ConfigMap` in your component:
+
+[source,yaml]
+----
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    networking.openshift-config.syn.tools/include-operator: "" <1>
+  name: cilium-kubeproxy <2>
+  namespace: openshift-config <3>
+data: <4>
+  spec: |-
+    {
+        "deployKubeProxy": false
+    }
+----
+<1> Label the `ConfigMap` so it's picked up by the `ManagedResource`, see xref:references/parameters.adoc#_networkcustomization_labelconfig_and_networkcustomization_labeloperator[Parameters] for the values.
+<2> The `ConfigMaps` will get sorted by their name before merging.
+<3> Apply the `ConfigMap` to the `openshift-config` namespace.
+<4> Use the key `spec` for your configuration
+
+[IMPORTANT]
+====
+The configuration from xref:references/parameters.adoc#_networkcustomization_specconfig_and_networkcustomization_specoperator[this component] will take precendence over any `ConfigMaps`.
+====

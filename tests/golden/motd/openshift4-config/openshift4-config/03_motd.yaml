@@ -73,6 +73,8 @@ spec:
 apiVersion: espejote.io/v1alpha1
 kind: JsonnetLibrary
 metadata:
+  annotations:
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
   labels:
     app.kubernetes.io/name: motd
   name: motd
