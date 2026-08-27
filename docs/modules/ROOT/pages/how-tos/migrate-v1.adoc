@@ -30,4 +30,4 @@ parameters:
 ----
 <1> Setting a registry hostname to `null` will remove any auth config for that registry if it's present in the `pull-secret` secret on the cluster.
 
-See the xref:references/parameters.adoc#_globalPullSecrets[parameter docs] for more details.
+See the xref:references/parameters.adoc#_globalpullsecrets[parameter docs] for more details.

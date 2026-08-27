@@ -2,32 +2,76 @@
 
 The parent key for all the following parameters is `openshift4_config`.
 
-== `globalPullSecret`
+== `globalPullSecrets`
+
+[horizontal]
+type:: dict
+default:: `{}`
+
+An alias for <<_pullsecretcustomization_auths,`pullSecretCustomization.auths`>>.
+
+Entries from both parameters are merged; entries from `pullSecretCustomization.auths` win if the same registry host is configured in both.
+New configuration should use `pullSecretCustomization.auths`, which keeps all pull secret configuration in one place.
+The component emits a trace message when this parameter is used.
+
+== `pullSecretCustomization`
+
+[horizontal]
+type:: dictionary
+default::
++
+[source,yaml]
+----
+pullSecretCustomization:
+  enabled: true
+  label: 'pull-secret.openshift-config.syn.tools/include'
+  auths: {}
+----
+
+Configures the Espejote `ManagedResource` which keeps the cluster's global pull secret (`pull-secret` in namespace `openshift-config`) up to date.
+
+The `ManagedResource` collects the `auths` entries of every labelled secret in namespace `openshift-config`, adds the entries from <<_pullsecretcustomization_auths,`pullSecretCustomization.auths`>> on top, and merges the result into the cluster pull secret.
+Entries which aren't contributed by any of those sources are left untouched, so the component coexists with the OpenShift installer and with other controllers which maintain their own entries.
+
+Because the `ManagedResource` also watches the cluster pull secret itself, manual edits of the managed entries are reverted automatically.
+
+=== `pullSecretCustomization.enabled`
+
+[horizontal]
+type:: boolean
+default:: `true`
+
+Whether to deploy the `ManagedResource`.
+
+=== `pullSecretCustomization.label`
 
 [horizontal]
 type:: string
-default:: absent
+default:: `pull-secret.openshift-config.syn.tools/include`
+
+
+Other components can create secrets in the `openshift-config` namespace with their own pull-secret.
+If they label those secrets with this key, they get merged into the final pull-secret.
+
+The component reads the `auths` field of the secret's `.dockerconfigjson` and nothing else.
+Labelled secrets without a `.dockerconfigjson` field are skipped, so a mislabelled secret can't break the reconciliation.
+
+[NOTE]
+====
+If several labelled secrets set the same registry host, the secrets are sorted ascibetically by `metadata.name` and later ones win.
+Entries from `pullSecretCustomization.auths` take precedence over entries from any labelled secret.
+====
 
 [IMPORTANT]
 ====
-This parameter is deprecated.
-Please migrate your additional pull secrets to parameter `globalPullSecrets`.
+Changing this parameter doesn't remove entries which were merged under the old label.
+The `ManagedResource` only ever adds or overwrites entries.
+Set the registry host to `null` in `pullSecretCustomization.auths` to remove an entry.
 ====
 
-A Vault reference pointing to the Vault secret containing the docker configuration file in JSON format.
-If the parameter is null, the component doesn't manage the cluster's global pull secret.
+See xref:how-tos/pull-secret-config.adoc[] for a worked example.
 
-The component writes the value of this parameter into the field `.dockerconfigjson` of the secret `pull-secret` in namespace `openshift-config`.
-
-See the OpenShift documentation for more details on https://docs.openshift.com/container-platform/latest/openshift_images/managing_images/using-image-pull-secrets.html#images-update-global-pull-secret_using-image-pull-secret[managing the cluster's global pull secret].
-
-[IMPORTANT]
-====
-You need to make sure that the existing pull secrets present on a cluster (deployed by the OpenShift installer) are included in the configuration deployed by this component.
-Otherwise, OpenShift cluster services may stop working because their respective container images can't be downloaded anymore.
-====
-
-== `globalPullSecrets`
+=== `pullSecretCustomization.auths`
 
 [horizontal]
 type:: dict
@@ -36,16 +80,26 @@ example::
 +
 [source,yaml]
 ----
-docker.io:
-  email: dockerhub@example.com <1>
-  auth: ?{vaultkv:${cluster:tenant}/${cluster:name}/openshift4-config/docker.io-pull-secret} <2>
+pullSecretCustomization:
+  auths:
+    docker.io:
+      email: dockerhub@example.com <1>
+      auth: ?{vaultkv:${cluster:tenant}/${cluster:name}/openshift4-config/docker.io-pull-secret} <2>
+    cloud.openshift.com: null <3>
 ----
 <1> Some registries require an email address to be present for authenticated pulls.
 <2> We strongly recommend that you store the `auth` value for the registry in Vault.
+<3> Setting a registry host to `null` removes its entry from the cluster pull secret.
 
-This parameter allows customizing the OpenShift cluster pull-secret without having to replicate the complete secret contents in Vault.
+The pull secret entries configured through the cluster hierarchy.
+This allows customizing the cluster pull secret without having to replicate the complete secret contents in Vault.
+
 The component expects entries in the dict to be valid entries for the `.dockerconfigjson` `auths` field.
-The component allows users to remove existing entries (also entries originally created by the OpenShift installer) by setting the value for a registry host to `null`.
+Entries with a `null` value are removed from the cluster pull secret, including entries originally created by the OpenShift installer.
+This is how you opt out of https://docs.openshift.com/container-platform/latest/support/remote_health_monitoring/opting-out-of-remote-health-reporting.html[remote health reporting], for example.
+
+The component deploys these entries in the Espejote `JsonnetLibrary` `appuio-pull-secret` in namespace `openshift-config`.
+They're merged after any labelled secret, so they take precedence.
 
 [NOTE]
 ====

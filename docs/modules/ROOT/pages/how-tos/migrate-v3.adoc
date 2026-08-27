@@ -1,0 +1,79 @@
+= Upgrade `component-openshift4-config` from `v2.x` to `v3.x`
+
+Version 3.x reworks how the component manages the cluster's global pull secret and reorganises the corresponding configuration parameters.
+See https://github.com/appuio/component-openshift4-config/releases/tag/v3.0.0[the release notes] for the full changelog.
+
+Most of the changes are backward compatible, but some changes might require manual steps.
+
+
+== Migration steps
+
+The migration steps are highly dependent on your configuration.
+
+If you don't use the `globalPullSecret` parameter, you don't need to do anything.
+
+If you are using the `globalPullSecret` parameter, the component fails to compile until you migrate.
+The parameter held a complete docker config as a single Vault reference.
+Move its `auths` entries to `pullSecretCustomization.auths`, which takes the entries individually:
+
+[source,yaml]
+----
+parameters:
+  openshift4_config:
+    pullSecretCustomization:
+      auths:
+        registry.example.com:
+          auth: ?{vaultkv:${cluster:tenant}/${cluster:name}/openshift4-config/registry.example.com-pull-secret} <1>
+          email: docker@example.com <2>
+        cloud.openshift.com: null <3>
+----
+<1> We strongly recommend that you store the `auth` config for the registry in Vault.
+Please make sure you store the config as a base64-encoded string in Vault.
+<2> Some registries require an email address for authenticated pulls.
+<3> Setting a registry host to `null` removes its entry from the cluster pull secret.
+
+You only need to list the entries you want to add, change or remove.
+Entries which are already present on the cluster, including those created by the OpenShift installer, are left untouched.
+
+[NOTE]
+====
+See xref:#_legacy_globalpullsecret[legacy globalPullSecret] for more details.
+====
+
+
+== Explanation of configuration changes
+
+=== legacy `globalPullSecret`
+
+The `globalPullSecret` parameter has been removed.
+Its `auths` entries move to `pullSecretCustomization.auths`.
+
+[IMPORTANT]
+====
+This change is *not* backward compatible.
+The component fails to compile with a message pointing at this page as long as the parameter is set.
+====
+
+[WARNING]
+====
+Previously, this parameter replaced the complete contents of the cluster pull secret.
+This parameter has been deprecated since component version v1.0.0, which introduced a mechanism which merges the configured entries while preserving the in-cluster state.
+If you relied on the parameter to remove an entry by omitting it, set the registry host to `null` in `pullSecretCustomization.auths` instead.
+====
+
+=== legacy `globalPullSecrets`
+
+The `globalPullSecrets` dictionary has been integrated into the `pullSecretCustomization` dictionary as `pullSecretCustomization.auths`.
+
+[TIP]
+====
+This change is backward compatible, but migrating the values to the new structure is recommended.
+The component emits a trace message as long as the parameter is used.
+====
+
+[NOTE]
+====
+Entries from both parameters are merged.
+If the same registry host is configured in both, the entry from `pullSecretCustomization.auths` wins.
+xref:references/parameters.adoc#_pullsecretcustomization_auths[See Example]
+====
