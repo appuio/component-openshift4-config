@@ -1,4 +1,4 @@
-local kube = import 'lib/kube.libjsonnet';
+local kube = import 'kube-ssa-compat.libsonnet';
 
 local operator_openshift_io_cluster_reader =
   kube.ClusterRole('syn:aggregate-operator-openshift-io-to-cluster-reader') {
