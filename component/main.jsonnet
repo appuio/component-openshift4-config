@@ -5,25 +5,22 @@ local inv = kap.inventory();
 // The hiera parameters for the component
 local params = inv.parameters.openshift4_config;
 
-local legacyPullSecret = std.get(params, 'globalPullSecret', null);
+assert std.get(params, 'globalPullSecret', null) == null :
+       'Parameter `globalPullSecret` has been removed. '
+       + 'Please migrate your pull secret entries to `pullSecretCustomization.auths`. '
+       + 'See https://hub.syn.tools/openshift4-config/how-to/migrate-v3.html for details.';
 
-local dockercfg = std.trace(
-  'Your config for openshift4-config uses the deprecated `globalPullSecret` parameter. '
-  + 'Please migrate to `globalPullSecrets`. '
-  + 'See https://hub.syn.tools/openshift4-config/how-to/migrate-v1.html for details.',
-  kube.Secret('pull-secret') {
-    metadata+: {
-      namespace: 'openshift-config',
-      annotations+: {
-        'argocd.argoproj.io/sync-options': 'Prune=false',
-      },
-    },
-    stringData+: {
-      '.dockerconfigjson': legacyPullSecret,
-    },
-    type: 'kubernetes.io/dockerconfigjson',
-  }
-);
+local pullSecret =
+  local manifests = import 'pull-secret.libsonnet';
+  if std.length(std.objectFields(params.globalPullSecrets)) > 0 then
+    std.trace(
+      'Parameter `globalPullSecrets` is an alias for `pullSecretCustomization.auths`. '
+      + 'Consider moving your configuration to `pullSecretCustomization.auths`.',
+      manifests
+    )
+  else
+    manifests;
+
 
 local motd = import 'motd.libsonnet';
 
@@ -56,12 +53,10 @@ local vsphere = import 'vsphere.libsonnet';
 
 // Define outputs below
 {
-  [if legacyPullSecret != null then '01_dockercfg']: dockercfg,
-  [if legacyPullSecret == null && std.length(std.objectFields(params.globalPullSecrets)) > 0 then '99_cluster_pull_secret']:
-    import 'pull-secret-sync-job.libsonnet',
   [if std.length(motd) > 0 then '03_motd']: motd,
   [if params.etcdCustomization.enabled then '05_etcd_managedresource']: import 'etcd.libsonnet',
   [if params.networkCustomization.enabled then '05_networking_managedresource']: import 'networking.libsonnet',
+  [if params.pullSecretCustomization.enabled then '05_pull_secret_managedresource']: pullSecret,
   '10_aggregate_to_cluster_reader': import 'aggregated-clusterroles.libsonnet',
   [if params.caBundle != null then '11_ca_bundle']: caBundle,
 } + if params.cloud == 'vsphere' then {

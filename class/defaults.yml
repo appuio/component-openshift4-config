@@ -11,12 +11,6 @@ parameters:
       username: null
       password: null
 
-    images:
-      oc:
-        registry: quay.io
-        repository: appuio/oc
-        tag: v4.21
-
     motd:
       messages: {}
       include_console_notifications: false
@@ -25,6 +19,11 @@ parameters:
       enabled: false
       spec:
         controlPlaneHardwareSpeed: ""
+
+    pullSecretCustomization:
+      enabled: true
+      label: 'pull-secret.openshift-config.syn.tools/include'
+      auths: {}
 
     networkCustomization:
       enabled: true

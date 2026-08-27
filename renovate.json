@@ -37,21 +37,6 @@
         "automerge",
         "bump:patch"
       ]
-    },
-    {
-      "matchUpdateTypes": [
-        "minor"
-      ],
-      "automerge": true,
-      "platformAutomerge": false,
-      "labels": [
-        "dependency",
-        "automerge",
-        "bump:minor"
-      ],
-      "matchPackagePatterns": [
-        "^quay.io/appuio/oc$"
-      ]
     }
   ]
 }
