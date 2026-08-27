@@ -1,7 +1,7 @@
 = Upgrade `component-openshift4-config` from `v2.x` to `v3.x`
 
-Version 3.x reworks how the component manages the cluster's global pull secret and reorganises the corresponding configuration parameters,
-https://github.com/appuio/component-openshift4-config/releases/tag/v3.0.0[see Release Notes] for more details.
+Version 3.x reworks how the component manages the cluster's global pull secret and reorganises the corresponding configuration parameters.
+See https://github.com/appuio/component-openshift4-config/releases/tag/v3.0.0[the release notes] for the full changelog.
 
 Most of the changes are backward compatible, but some changes might require manual steps.
 
@@ -57,7 +57,7 @@ The component fails to compile with a message pointing at this page as long as t
 [WARNING]
 ====
 Previously, this parameter replaced the complete contents of the cluster pull secret.
-The component now only merges the configured entries and leaves everything else untouched.
+This parameter has been deprecated since component version v1.0.0, which introduced a mechanism which merges the configured entries while preserving the in-cluster state.
 If you relied on the parameter to remove an entry by omitting it, set the registry host to `null` in `pullSecretCustomization.auths` instead.
 ====
 

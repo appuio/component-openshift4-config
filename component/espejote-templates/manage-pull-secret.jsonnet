@@ -2,18 +2,20 @@ local esp = import 'espejote.libsonnet';
 
 local spec = import 'appuio-pull-secret/spec.json';
 
-local global_pull_secret = std.parseJson(std.base64Decode(esp.context().global_pull_secret[0].data['.dockerconfigjson']));
-
-// Secrets without a `.dockerconfigjson` field are ignored, so that a
-// mislabelled secret doesn't break the reconciliation.
-local dockerconfigSecrets(secrets) = std.filter(
-  function(s) std.objectHas(std.get(s, 'data', {}), '.dockerconfigjson'),
-  secrets
-);
+local global_pull_secret =
+  local gps = esp.context().global_pull_secret;
+  assert std.length(gps) == 1 : "Expected 'global_pull_secret' context to have exactly one entry";
+  assert
+    std.objectHas(gps[0], 'data') && std.objectHas(gps[0].data, '.dockerconfigjson')
+    : "Expected global pull secret ('openshift-config/pull-secret') to have field '.dockerconfigjson";
+  std.parseJson(std.base64Decode(gps[0].data['.dockerconfigjson']));
 
 // Labelled secrets contributed by other components, merged in a stable order.
 local sources = std.sort(
-  dockerconfigSecrets(esp.context().source_secrets),
+  std.filter(
+    function(s) s.type == 'kubernetes.io/dockerconfigjson',
+    esp.context().source_secrets
+  ),
   function(s) s.metadata.name
 );
 
