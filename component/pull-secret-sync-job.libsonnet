@@ -2,8 +2,8 @@
 // secret.
 // The job is modelled after the instructions outlined in
 // https://docs.openshift.com/container-platform/4.11/post_installation_configuration/cluster-tasks.html#images-update-global-pull-secret_post-install-cluster-tasks
+local kube = import 'kube-ssa-compat.libsonnet';
 local kap = import 'lib/kapitan.libjsonnet';
-local kube = import 'lib/kube.libjsonnet';
 local inv = kap.inventory();
 // The hiera parameters for the component
 local params = inv.parameters.openshift4_config;

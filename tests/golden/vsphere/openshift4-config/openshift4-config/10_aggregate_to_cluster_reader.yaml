@@ -1,7 +1,6 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  annotations: {}
   labels:
     name: syn-aggregate-operator-openshift-io-to-cluster-reader
     rbac.authorization.k8s.io/aggregate-to-cluster-reader: 'true'
@@ -19,7 +18,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  annotations: {}
   labels:
     name: syn-aggregate-networking-k8s-io-to-cluster-reader
     rbac.authorization.k8s.io/aggregate-to-cluster-reader: 'true'

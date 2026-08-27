@@ -96,7 +96,6 @@ spec:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  annotations: {}
   labels:
     name: appuio-motd-editor
   name: appuio:motd-editor
@@ -123,7 +122,6 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  annotations: {}
   labels:
     name: appuio-motd-manager
   name: appuio:motd-manager
@@ -139,7 +137,6 @@ subjects:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  annotations: {}
   labels:
     name: motd-manager
   name: motd-manager
@@ -148,7 +145,6 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  annotations: {}
   labels:
     name: appuio-motd-manager
   name: appuio:motd-manager
